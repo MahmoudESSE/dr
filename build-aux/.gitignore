@@ -1,0 +1,14 @@
+.DS_Store
+.idea
+*.log
+tmp/
+
+/ar-lib
+/compile
+/config.guess
+/config.rpath
+/config.sub
+/depcomp
+/install-sh
+/ltmain.sh
+/missing

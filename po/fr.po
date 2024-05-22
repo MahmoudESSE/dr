@@ -1,0 +1,23 @@
+# French translations for dr package.
+# Copyright (C) 2024 MahmoudESSE
+# This file is distributed under the same license as the dr package.
+# mahmoudesse <mahmoudessehayli@gmail.com>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dr 0.1\n"
+"Report-Msgid-Bugs-To: mahmoudessehayli@gmail.com\n"
+"POT-Creation-Date: 2024-05-22 06:24+0100\n"
+"PO-Revision-Date: 2024-05-22 06:27+0100\n"
+"Last-Translator: mahmoudesse <mahmoudessehayli@gmail.com>\n"
+"Language-Team: French <traduc@traduc.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/main.c:47
+#, c-format
+msgid "%s: error %d: %s\n"
+msgstr "%s: erreur %d: %s\n"

@@ -1,0 +1,13 @@
+.DS_Store
+.idea
+*.log
+tmp/
+
+/configure
+/build
+/*.cache
+/*.in
+/*~
+/*.m4
+/m4
+/ABOUT-NLS
