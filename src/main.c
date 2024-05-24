@@ -17,96 +17,180 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <argp.h>
 #include <config.h>
+#include <dirent.h>
 #include <errno.h>
-#include <getopt.h>
 #include <libgen.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sysexits.h>
 
 #include "gettext.h"
 #include "str.h"
 
 #define _(str) gettext (str)
 
-/* Flag set by '--verbose'. */
-static int verbose_flag;
+#define MAX_STR_SIZE 1024
+
+const char *argp_program_version = PACKAGE_STRING;
+
+const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
+
+static char argp_doc[] = "dr -- list directory content in a tui.";
+
+static char argp_args_doc[] = "[PATH...]";
 
 /* List of Options */
-static struct option options[] = {
+static struct argp_option argp_options[] = {
   /* These options set a flag. */
-  { "verbose", no_argument, &verbose_flag, 1 },
-  { "quiet", no_argument, &verbose_flag, 0 },
-
-  /*
-   * These options don't set a flag.
-   * We distinguish them by their indices.
-   */
-  { "list", no_argument, 0, 'l' },
+  { "help", 'h', 0, 0, "show this help message", -1 },
+  { "version", 'v', 0, 0, "show program version", -1 },
+  { "usage", 'u', 0, 0, "show a short usage message", 0 },
+  { 0, 0, 0, 0, "program settings:", 0 },
+  { "verbose", 'V', 0, 0, "print more information", 0 },
+  { "quiet", 'q', 0, 0, "print no information", 0 },
   { 0 },
 };
+
+struct arguments
+{
+  int verbose, quiet; /* '-v', '-q' */
+  int no_args;
+  char *name;
+};
+
+static error_t
+argp_parser (int key, char *arg, struct argp_state *state)
+{
+
+  /* Get the 'input' argument from 'argp_parse', which we
+   * know is a pointer to our arguments structure */
+  struct arguments *arguments = state->input;
+
+  switch (key)
+    {
+    case 'V':
+      arguments->verbose = 1;
+      break;
+    case 'q':
+      arguments->quiet = 1;
+      break;
+    case 'h':
+      argp_state_help (state, state->out_stream, ARGP_HELP_STD_HELP);
+      break;
+    case 'u':
+      argp_state_help (state, state->out_stream,
+                       ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
+      break;
+    case 'v':
+      fprintf (state->out_stream, "%s\n", argp_program_version);
+      exit (EXIT_SUCCESS);
+      break;
+    case ARGP_KEY_NO_ARGS:
+      arguments->no_args = 1;
+      break;
+    case ARGP_KEY_ARG:
+      arguments->name = arg;
+      break;
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+  return EXIT_SUCCESS;
+}
+
+static struct argp argp = {
+  argp_options, argp_parser, argp_args_doc, argp_doc, 0, 0, 0,
+};
+
+static int
+select_entries (const struct dirent *ep)
+{
+  (void)ep;
+  return 1;
+}
+
+int
+get_directory_entries (const char *const list_dir_name, int *num_entries)
+{
+  struct dirent **eps;
+  *num_entries = scandir (list_dir_name, &eps, select_entries, alphasort);
+
+  if (*num_entries < 0)
+    {
+      perror ("Couldn't open the directory");
+      return 1;
+    }
+
+  int cen;
+  for (cen = 0; cen < *num_entries; ++cen)
+    {
+      puts (eps[cen]->d_name);
+    }
+
+  return 0;
+}
 
 int
 main (int argc, char **argv)
 {
+  struct arguments arguments;
+  arguments.quiet = 0;
+  arguments.verbose = 0;
+  arguments.no_args = 0;
+
   STR_CSTR exec_path = argv[0];
   STR_CSTR exec_name = basename (exec_path);
 
-  setlocale (LC_ALL, NULL);
+  argp_parse (&argp, argc, argv, ARGP_NO_HELP, 0, &arguments);
+
+  setlocale (LC_ALL, "");
 
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
-  int c;
-
-  while (1)
+  if (arguments.verbose)
     {
-      /* 'getopt_long' stores the option index here. */
-      int option_index = 0;
-
-      c = getopt_long (argc, argv, "l::", options, &option_index);
-
-      /* Detect the end of the option */
-      if (c == -1)
-        break;
-
-      switch (c)
-        {
-        case 0:
-          /* If this option set a flag, do nothing else now. */
-          if (options[option_index].flag != 0)
-            break;
-          printf ("option: %s", options[option_index].name);
-          if (optarg)
-            printf (" with arg %s", optarg);
-          printf ("\n");
-          break;
-        case 'l':
-          puts ("option: -l\n");
-          break;
-        case '?':
-        case 'h':
-          /* 'getopt_long' already printed an error message */
-          /* TODO: change this to an actual help option */
-          break;
-        default:
-          abort ();
-        }
+      printf ("verbose: true\n");
     }
 
-  if (verbose_flag)
-    puts ("verbose flag is set");
-
-  if (optind < argc)
+  if (arguments.quiet)
     {
-      printf ("non-option ARGV-elements: ");
-      while (optind < argc)
-        printf ("%s", argv[optind++]);
-      putchar ('\n');
+      printf ("verbose: true\n");
     }
 
+  char *list_dir_name = NULL;
+  int lenght_list_dir_name = MAX_STR_SIZE * sizeof (char);
+  list_dir_name = malloc (lenght_list_dir_name + +1);
+  if (list_dir_name == 0)
+    {
+      goto error;
+    }
+
+  memset (list_dir_name, 0, sizeof (char));
+  if (arguments.no_args)
+    {
+      list_dir_name = "./";
+    }
+  else
+    {
+      list_dir_name = arguments.name;
+    }
+
+  int num_entries = 0;
+  get_directory_entries (list_dir_name, &num_entries);
+
+  if (num_entries < 0)
+    {
+      goto error;
+    }
+
+  printf ("listed: %d entries\n", num_entries);
+
+error:
   if (errno != 0)
     {
       printf (_ ("%s: error %d: %s\n"), exec_name, errno, strerror (errno));
