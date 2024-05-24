@@ -109,8 +109,10 @@ static struct argp argp = {
 static int
 select_entries (const struct dirent *ep)
 {
-  (void)ep;
-  return 1;
+  int check_dot_current_directory = (0 != strcmp (ep->d_name, "."));
+  int check_dot_dot_parent_directory = (0 != strcmp (ep->d_name, ".."));
+
+  return check_dot_current_directory && check_dot_dot_parent_directory;
 }
 
 int

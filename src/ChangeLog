@@ -1,8 +1,9 @@
 2024-05-24  Mahmoud Es-sehayli  <mahmoudessehayli@gmail.com>
 
         * main.c: use argp instead of getopt
+        (select_entries): Filter dot and dotdot directories.
 
-        * main.c: add <dirent.h> to get directory information
+        * main.c: Add <dirent.h> to get directory information.
 
     Copyright (C) 2024  MahmoudESSE
 
