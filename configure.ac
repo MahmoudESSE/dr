@@ -17,7 +17,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Prelude
 AC_PREREQ([2.72])
-AC_INIT([dr], [0.1], [mahmoudessehayli@gmail.com])
+AC_INIT([dr], [0.1.0], [mahmoudessehayli@gmail.com])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror 1.16])
