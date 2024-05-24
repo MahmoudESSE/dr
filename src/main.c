@@ -34,7 +34,7 @@
 
 #define _(str) gettext (str)
 
-#define MAX_STR_SIZE 1024
+#define MAX_STR_SIZE 1024 + NAME_MAX
 
 const char *argp_program_version = PACKAGE_STRING;
 
@@ -205,26 +205,32 @@ main (int argc, char **argv)
       printf ("verbose: true\n");
     }
 
-  char *list_dir_name = NULL;
+  char *name_dir_list = NULL;
   int lenght_list_dir_name = MAX_STR_SIZE * sizeof (char);
-  list_dir_name = malloc (lenght_list_dir_name + +1);
-  if (list_dir_name == 0)
+  name_dir_list = malloc (lenght_list_dir_name + +1);
+  if (name_dir_list == NULL)
     {
       goto error;
     }
 
-  memset (list_dir_name, 0, sizeof (char));
+  memset (name_dir_list, 0, sizeof (char));
   if (arguments.no_args)
     {
-      list_dir_name = "./";
+      name_dir_list = "./";
     }
   else
     {
-      list_dir_name = arguments.name;
+      name_dir_list = arguments.name;
+    }
+
+  name_dir_list = realloc (&name_dir_list, strlen (name_dir_list) + 1);
+  if (name_dir_list == NULL)
+    {
+      goto error;
     }
 
   int num_entries = 0;
-  get_directory_entries (list_dir_name, &num_entries);
+  get_directory_entries (name_dir_list, &num_entries);
 
   if (num_entries < 0)
     {
