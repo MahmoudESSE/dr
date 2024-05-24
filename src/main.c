@@ -116,10 +116,51 @@ select_entries (const struct dirent *ep)
 }
 
 int
+typesort (const struct dirent **a, const struct dirent **b)
+{
+  if ((*a)->d_type == DT_DIR && (*b)->d_type == DT_DIR)
+    {
+      if ((*a)->d_name[0] == '.' && (*b)->d_name[0] != '.')
+        {
+          return -1;
+        }
+
+      if ((*a)->d_name[0] != '.' && (*b)->d_name[0] == '.')
+        {
+          return 1;
+        }
+
+      return strcoll ((*a)->d_name, (*b)->d_name);
+    }
+
+  if ((*a)->d_type != DT_DIR && (*b)->d_type != DT_DIR)
+    {
+      if ((*a)->d_name[0] == '.' && (*b)->d_name[0] != '.')
+        {
+          return -1;
+        }
+
+      if ((*a)->d_name[0] != '.' && (*b)->d_name[0] == '.')
+        {
+          return 1;
+        }
+
+      return strcoll ((*a)->d_name, (*b)->d_name);
+    }
+
+  if ((*a)->d_type == DT_DIR && (*b)->d_type != DT_DIR)
+    {
+      return -1;
+    }
+
+  return 1;
+}
+
+int
 get_directory_entries (const char *const list_dir_name, int *num_entries)
 {
   struct dirent **eps;
-  *num_entries = scandir (list_dir_name, &eps, select_entries, alphasort);
+  *num_entries = scandir (list_dir_name, &eps, select_entries, typesort);
 
   if (*num_entries < 0)
     {

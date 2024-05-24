@@ -2,6 +2,7 @@
 
         * main.c: use argp instead of getopt
         (select_entries): Filter dot and dotdot directories.
+        (typesort): add scandir sort function
 
         * main.c: Add <dirent.h> to get directory information.
 
