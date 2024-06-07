@@ -21,5 +21,5 @@ AM_CPPFLAGS = -I$(srcdir)/../lib -I$(srcdir) -DLOCALEDIR=\"$(localedir)\"
 
 bin_PROGRAMS = dr
 dr_SOURCES = main.c
-dr_LDADD = ../lib/libstr.la
+dr_LDADD = ../lib/libstr.la ../lib/libcli.la ../lib/libgettext.la
 LDADD = $(LIBINTL)

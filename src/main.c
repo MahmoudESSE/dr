@@ -29,62 +29,8 @@
 #include <sys/types.h>
 #include <sysexits.h>
 
-#include "gettext.h"
+#include "cli.h"
 #include "str.h"
-
-#define _(str) gettext (str)
-
-/*
- * Lenght limit for arrays.
- */
-#define MAX_STR_SIZE 1024
-
-/*
- * Name with the version of the program
- * to display in '--version' message.
- */
-const char *argp_program_version = PACKAGE_STRING;
-
-/*
- * Bug report email address to send bugs or asks questions
- * typically shown at the bottom of '--help' message.
- */
-const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
-
-/*
- * Simple documentatin to show at the top of '--help' message.
- */
-static char argp_doc[] = "dr -- list directory content in a tui.";
-
-/*
- * Add custom usage messages.
- */
-static char argp_args_doc[] = "[PATH...]";
-
-/*
- * List of options that can be used.
- */
-static struct argp_option argp_options[] = {
-  /* These options set a flag. */
-  { "help", 'h', 0, 0, "show this help message", -1 },
-  { "version", 'v', 0, 0, "show program version", -1 },
-  { "usage", 'u', 0, 0, "show a short usage message", 0 },
-  { 0, 0, 0, 0, "program settings:", 0 },
-  { "verbose", 'V', 0, 0, "print more information", 0 },
-  { "quiet", 'q', 0, 0, "print no information", 0 },
-  { 0 },
-};
-
-/*
- * Struct that holds flags that get set
- * and values from the command line.
- */
-struct arguments
-{
-  int verbose, quiet; /* '-v', '-q' */
-  int no_args;
-  char *name;
-};
 
 /*
  * Argp parser to go through the options,
@@ -99,7 +45,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
   /* Get the 'input' argument from 'argp_parse', which we
    * know is a pointer to our arguments structure.
    */
-  struct arguments *arguments = state->input;
+  struct cli_arguments *arguments = state->input;
 
   switch (key)
     {
@@ -117,7 +63,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
                        ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
       break;
     case 'v':
-      fprintf (state->out_stream, "%s\n", argp_program_version);
+      fprintf (state->out_stream, "%s\n", cli_argp_program_version);
       exit (EXIT_SUCCESS);
       break;
     case ARGP_KEY_NO_ARGS:
@@ -135,10 +81,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
 /*
  * Construct the argp data structure wich we pass to the argp parse function.
  */
-static struct argp argp = {
-  argp_options, argp_parser, argp_args_doc, argp_doc, 0, 0, 0,
+struct argp argp = {
+  cli_argp_options, argp_parser, cli_argp_args_doc, cli_argp_doc, 0, 0, 0,
 };
-
 /*
  * We want the files and directories that the user can interact with,
  * yes '.' and '..' are normally used on the command line but in a
@@ -246,7 +191,7 @@ main (int argc, char **argv)
    * Initialize the arguments so we don't get
    * any weird values if their not set.
    */
-  struct arguments arguments;
+  struct cli_arguments arguments;
   arguments.quiet = 0;
   arguments.verbose = 0;
   arguments.no_args = 0;

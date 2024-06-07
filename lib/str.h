@@ -17,12 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LIB_STR_H_
-#define LIB_STR_H_
+#ifndef DR_LIB_STR_H_
+#define DR_LIB_STR_H_
+
+#include "gettext.h"
 
 /*
  * c style string type definition short hand
  */
 #define STR_CSTR char *
 
-#endif // LIB_STR_H_
+#define _(str) gettext (str)
+
+/*
+ * Lenght limit for arrays.
+ */
+#define MAX_STR_SIZE 1024
+
+#endif // DR_LIB_STR_H_
