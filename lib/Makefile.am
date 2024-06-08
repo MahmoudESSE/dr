@@ -18,10 +18,11 @@
 AM_CFLAGS = -Wall -Werror -Wextra -std=gnu11
 AM_CPPFLAGS = -I$(srcdir)/../src -I$(srcdir) -DLOCALEDIR=\"$(localedir)\"
 
-lib_LTLIBRARIES = libstr.la libgettext.la libcli.la
+lib_LTLIBRARIES = libstr.la libgettext.la libcli.la libdir.la
 libstr_la_SOURCES = str.h
 libgettext_la_SOURCES = gettext.h
 libcli_la_SOURCES = cli.h
+libdir_la_SOURCES = dir.h dir.c
 LDADD = $(LIBINTL)
 
 # CURRENT: the latest interface implemented
@@ -35,3 +36,4 @@ LDADD = $(LIBINTL)
 libstr_la_LDFLAGS = -version-info 0:0:0
 libgettext_la_LDFLAGS = -version-info 0:0:0
 libcli_la_LDFLAGS = -version-info 0:0:0
+libdir_la_LDFLAGS = -version-info 0:0:0

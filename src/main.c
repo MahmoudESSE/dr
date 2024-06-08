@@ -19,17 +19,14 @@
 
 #include <argp.h>
 #include <config.h>
-#include <dirent.h>
 #include <errno.h>
-#include <libgen.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sysexits.h>
 
 #include "cli.h"
+#include "dir.h"
 #include "str.h"
 
 /*
@@ -84,105 +81,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
 struct argp argp = {
   cli_argp_options, argp_parser, cli_argp_args_doc, cli_argp_doc, 0, 0, 0,
 };
-/*
- * We want the files and directories that the user can interact with,
- * yes '.' and '..' are normally used on the command line but in a
- * user interface such as the tui they would be only usefull for us
- * but not the user so we don't show them.
- * TODO: remove the filter and filter at the business logic level instead
- * of in the directory reader.
- */
-static int
-select_entries (const struct dirent *ep)
-{
-  int check_dot_current_directory = (0 != strcmp (ep->d_name, "."));
-  int check_dot_dot_parent_directory = (0 != strcmp (ep->d_name, ".."));
-
-  return check_dot_current_directory && check_dot_dot_parent_directory;
-}
-
-/*
- * Make the output follow a strict sorting of:
- * hidden directory > regular directory > hidden files > regular files.
- */
-int
-typesort (const struct dirent **a, const struct dirent **b)
-{
-  /*
-   * Both are directories so we check wich one start
-   * with a '.'.
-   */
-  if ((*a)->d_type == DT_DIR && (*b)->d_type == DT_DIR)
-    {
-      if ((*a)->d_name[0] == '.' && (*b)->d_name[0] != '.')
-        {
-          return -1;
-        }
-
-      if ((*a)->d_name[0] != '.' && (*b)->d_name[0] == '.')
-        {
-          return 1;
-        }
-
-      return strcoll ((*a)->d_name, (*b)->d_name);
-    }
-
-  /*
-   * Both are files so we check wich one start
-   * with a '.'.
-   */
-  if ((*a)->d_type != DT_DIR && (*b)->d_type != DT_DIR)
-    {
-      if ((*a)->d_name[0] == '.' && (*b)->d_name[0] != '.')
-        {
-          return -1;
-        }
-
-      if ((*a)->d_name[0] != '.' && (*b)->d_name[0] == '.')
-        {
-          return 1;
-        }
-
-      return strcoll ((*a)->d_name, (*b)->d_name);
-    }
-
-  /*
-   * One of them is directory
-   */
-  if ((*a)->d_type == DT_DIR && (*b)->d_type != DT_DIR)
-    {
-      return -1;
-    }
-
-  return 1;
-}
-
-/*
- * Get the directory entries for the LIST_DIR_NAME.
- * pass NUM_ENTRIES to handle errors such as if the directory is empty.
- * TODO: pass an array to save into it the entries to handle those errors,
- * and use them later in the program.
- */
-int
-get_directory_entries (const char *const list_dir_name, int *num_entries)
-{
-  struct dirent **eps;
-  *num_entries = scandir (list_dir_name, &eps, select_entries, typesort);
-
-  if (*num_entries < 0)
-    {
-      perror ("Couldn't open the directory");
-      return 1;
-    }
-
-  int cen;
-  for (cen = 0; cen < *num_entries; ++cen)
-    {
-      puts (eps[cen]->d_name);
-    }
-
-  return 0;
-}
 
 int
 main (int argc, char **argv)
@@ -268,7 +166,7 @@ main (int argc, char **argv)
     }
 
   int num_entries = 0;
-  get_directory_entries (name_dir_list, &num_entries);
+  dir_get_directory_entries (name_dir_list, &num_entries);
 
   if (num_entries < 0)
     {

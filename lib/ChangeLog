@@ -1,3 +1,11 @@
+2024-06-17  MahmoudESSE  <mahmoudessehayli@gmail.com>
+
+        * dir.h: Library to handle directory entries
+
+        * dir.c: Implementation of dir.h
+
+        * Makefile.am (lib_LTLIBRARIES): Add new library (libdir)
+
 2024-06-07  MahmoudESSE  <mahmoudessehayli@gmail.com>
 
         * Makefile.am (lib_LTLIBRARIES): Add new libraries (libcli, libgettext).
