@@ -29,6 +29,8 @@
 #include "dir.h"
 #include "str.h"
 
+#define MAX_SIZE 1024
+
 /*
  * Argp parser to go through the options,
  * it sets the flags in ARGUMENTS and if there is
@@ -145,7 +147,7 @@ main (int argc, char **argv)
   /*
    * Allocate enough size for directory path name.
    */
-  name_dir_list = malloc (lenght_list_dir_name + +1);
+  name_dir_list = malloc (lenght_list_dir_name + 1);
   if (name_dir_list == NULL)
     {
       goto error;
@@ -166,11 +168,26 @@ main (int argc, char **argv)
     }
 
   int num_entries = 0;
-  dir_get_directory_entries (name_dir_list, &num_entries);
 
-  if (num_entries < 0)
+  struct dirent **dir_list = NULL;
+  int lenght_dir_list = MAX_SIZE * sizeof (struct dirent);
+  dir_list = malloc (lenght_dir_list + 1);
+  if (dir_list == NULL)
     {
       goto error;
+    }
+
+  memset (dir_list, 0, sizeof (struct dirent));
+
+  if (dir_get_directory_entries (name_dir_list, &dir_list, &num_entries) != 0)
+    {
+      goto error;
+    }
+
+  int cen;
+  for (cen = 0; cen < num_entries; ++cen)
+    {
+      puts (dir_list[cen]->d_name);
     }
 
   /*

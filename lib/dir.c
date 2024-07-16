@@ -62,11 +62,13 @@ dir_typesort (const struct dirent **a, const struct dirent **b)
 }
 
 int
-dir_get_directory_entries (const char *const list_dir_name, int *num_entries)
+dir_get_directory_entries (const char *const dir_list_name,
+                           __attribute__ ((unused)) struct dirent ***dir_list,
+                           int *num_entries)
 {
   struct dirent **eps;
   *num_entries
-      = scandir (list_dir_name, &eps, dir_select_entries, dir_typesort);
+      = scandir (dir_list_name, &eps, dir_select_entries, dir_typesort);
 
   if (*num_entries < 0)
     {
@@ -74,11 +76,7 @@ dir_get_directory_entries (const char *const list_dir_name, int *num_entries)
       return 1;
     }
 
-  int cen;
-  for (cen = 0; cen < *num_entries; ++cen)
-    {
-      puts (eps[cen]->d_name);
-    }
+  *dir_list = eps;
 
   return 0;
 }

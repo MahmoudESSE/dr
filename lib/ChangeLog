@@ -1,10 +1,18 @@
+2024-07-16  MahmoudESSE  <mahmoudessehayli@gmail.com>
+
+        * dir.h: change name of variable `list_dir_name`
+        to `dir_list_name`.
+
+        * dir.c (dir_get_directory_entries): modify the `dir_list_name` and
+        return it.
+
 2024-06-17  MahmoudESSE  <mahmoudessehayli@gmail.com>
 
-        * dir.h: Library to handle directory entries
+        * dir.h: Library to handle directory entries.
 
-        * dir.c: Implementation of dir.h
+        * dir.c: Implementation of dir.h.
 
-        * Makefile.am (lib_LTLIBRARIES): Add new library (libdir)
+        * Makefile.am (lib_LTLIBRARIES): Add new library (libdir).
 
 2024-06-07  MahmoudESSE  <mahmoudessehayli@gmail.com>
 

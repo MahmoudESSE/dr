@@ -1,3 +1,8 @@
+2024-07-16  MahmoudESSE  <mahmoudessehayli@gmail.com>
+
+        * main.c: get the values from the function `dir_get_directory_entries`
+        and display the values in the terminal.
+
 2024-06-17  MahmoudESSE  <mahmoudessehayli@gmail.com>
 
         * main.c: add dir.h

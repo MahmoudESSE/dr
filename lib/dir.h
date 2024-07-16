@@ -52,6 +52,6 @@ int dir_typesort (const struct dirent **a, const struct dirent **b);
  * and use them later in the program.
  */
 int dir_get_directory_entries (const char *const list_dir_name,
-                               int *num_entries);
+                               struct dirent ***dir_list, int *num_entries);
 
 #endif // DR_LIB_DIR_H_
