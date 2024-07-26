@@ -21,6 +21,7 @@
 #include <config.h>
 #include <errno.h>
 #include <locale.h>
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,7 @@
 #include "dir.h"
 #include "str.h"
 
-#define MAX_SIZE 1024
+#define MAX_SIZE 2056
 
 /*
  * Argp parser to go through the options,
@@ -83,6 +84,34 @@ argp_parser (int key, char *arg, struct argp_state *state)
 struct argp argp = {
   cli_argp_options, argp_parser, cli_argp_args_doc, cli_argp_doc, 0, 0, 0,
 };
+
+void
+tui_print_list (WINDOW *win, int *win_cur_pos, struct dirent **dir_list,
+                int num_entries)
+{
+
+  int cen = 0;
+
+  wmove (win, 0, 0);
+  refresh ();
+
+  for (cen = 0; cen < num_entries; ++cen)
+    {
+      waddstr (win, dir_list[cen]->d_name);
+      wmove (win, cen, 0);
+      refresh ();
+    }
+  *win_cur_pos = cen;
+  refresh ();
+
+  wmove (win, *win_cur_pos, 0);
+
+  wprintw (win, _ ("listed: %d entries\n"), num_entries);
+  refresh ();
+
+  wmove (win, 0, 0);
+  refresh ();
+}
 
 int
 main (int argc, char **argv)
@@ -184,16 +213,74 @@ main (int argc, char **argv)
       goto error;
     }
 
-  int cen;
-  for (cen = 0; cen < num_entries; ++cen)
+  int stdscr_max_y = 0;
+
+  int input_key;
+
+  int tui_stdscr_welcome_message_size = MAX_STR_SIZE * sizeof (char);
+
+  char *tui_stdscr_welcome_message = NULL;
+
+  tui_stdscr_welcome_message = malloc (tui_stdscr_welcome_message_size + 1);
+
+  memset (tui_stdscr_welcome_message, 0, tui_stdscr_welcome_message_size);
+
+  strcpy (tui_stdscr_welcome_message,
+          _ ("Hello to 'dr' your tui file manager."));
+
+  int stdscr_cur_pos = 0;
+
+  int length_entry = 0;
+
+  use_env (TRUE);
+  use_tioctl (TRUE);
+
+  initscr ();
+
+  cbreak ();
+  noecho ();
+  intrflush (stdscr, FALSE);
+  keypad (stdscr, TRUE);
+
+  stdscr_max_y = getmaxy (stdscr);
+
+  wmove (stdscr, stdscr_max_y - 1, 0);
+  refresh ();
+
+  waddstr (stdscr, tui_stdscr_welcome_message);
+  refresh ();
+
+  tui_print_list (stdscr, &stdscr_cur_pos, dir_list, num_entries);
+  refresh ();
+
+  stdscr_cur_pos = 0;
+
+  // TODO: add keybindings
+
+  while (1)
     {
-      puts (dir_list[cen]->d_name);
+      length_entry = strlen (dir_list[stdscr_cur_pos]->d_name);
+
+      mvchgat (0, 0, length_entry, A_BOLD | A_UNDERLINE, 1, NULL);
+      refresh ();
+
+      input_key = wgetch (stdscr);
+      refresh ();
+
+      switch (input_key)
+        {
+        case 'q':
+        case 'Q':
+          goto quit_tui;
+        default:
+          refresh ();
+          break;
+        }
     }
 
-  /*
-   * TODO: use ncurses to display this list.
-   */
-  printf ("listed: %d entries\n", num_entries);
+quit_tui:
+  refresh ();
+  endwin ();
 
   /*
    * Handle most error case here in defer way
@@ -204,6 +291,10 @@ error:
   if (errno != 0)
     {
       printf (_ ("%s: error %d: %s\n"), exec_name, errno, strerror (errno));
+
+      refresh ();
+      endwin ();
+
       exit (EXIT_FAILURE);
     }
 

@@ -17,6 +17,7 @@
 
 CC=gcc
 AM_CFLAGS = -Wall -Werror -Wextra -std=gnu11
+AM_LDFLAGS = -lcurses
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(srcdir) -DLOCALEDIR=\"$(localedir)\"
 
 bin_PROGRAMS = dr

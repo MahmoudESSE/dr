@@ -1,3 +1,10 @@
+2024-07-26  MahmoudESSE  <mahmoudessehayli@gmail.com>
+
+        * main.c: add ncurses.
+        (tui_print_list): print dir_list to ncurses.
+
+        * Makefile.am (AM_CPPFLAGS): add curses to build.
+
 2024-07-16  MahmoudESSE  <mahmoudessehayli@gmail.com>
 
         * main.c: get the values from the function `dir_get_directory_entries`
