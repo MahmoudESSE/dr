@@ -1,0 +1,12 @@
+#+title: Todo
+
+* TODO add ncurses library
+** TODO  tmux support when???
+* TODO display directories and files in a list
+** DONE display names
+** STRT display permissions
+** TODO display file size
+** TODO move in the list using vim bindings
+** TODO copy filename
+** TODO copy filepath
+** TODO change display style

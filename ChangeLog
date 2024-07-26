@@ -1,3 +1,7 @@
+2024-07-26  MahmoudESSE  <mahmoudessehayli@gmail.com>
+
+        * TODO.org: add ncurses tasks.
+
 2024-05-24  Mahmoud Es-sehayli  <mahmoudessehayli@gmail.com>
 
         * build.sh: Quickly build and run binary.
