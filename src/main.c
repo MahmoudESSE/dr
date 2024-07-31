@@ -85,19 +85,78 @@ struct argp argp = {
   cli_argp_options, argp_parser, cli_argp_args_doc, cli_argp_doc, 0, 0, 0,
 };
 
+/*
+ *  struct to hold info about each file and directory
+ *  refer to struct dirent in <dirent.h>
+ */
+struct file_entry
+{
+  char *fe_name;
+  unsigned char fe_name_length;
+  unsigned char fe_type;
+};
+
+/*
+  if (fe_raw_type == DT_DIR)
+    {
+      *fe_type = 'd';
+      return;
+    }
+
+  if (fe_raw_type == DT_LNK)
+    {
+      *fe_type = 'l';
+      return;
+    }
+
+  if (fe_raw_type == DT_SOCK)
+    {
+      *fe_type = 's';
+      return;
+    }
+
+  *fe_type = '.';
+*/
 void
-tui_print_list (WINDOW *win, int *win_cur_pos, struct dirent **dir_list,
-                int num_entries)
+file_entry_determine_type (unsigned char *fe_raw_type, char *fe_type)
+{
+  switch (*fe_raw_type)
+    {
+    case DT_DIR:
+      *fe_type = 'd';
+      break;
+
+    case DT_LNK:
+      *fe_type = 'l';
+      break;
+
+    case DT_SOCK:
+      *fe_type = 's';
+      break;
+
+    default:
+      *fe_type = '.';
+      break;
+    }
+}
+
+void
+tui_print_list (WINDOW *win, int *win_cur_pos,
+                struct file_entry **file_entries_list, int num_entries)
 {
 
   int cen = 0;
+  char file_entry_type = '.';
 
   wmove (win, 0, 0);
   refresh ();
 
   for (cen = 0; cen < num_entries; ++cen)
     {
-      waddstr (win, dir_list[cen]->d_name);
+      file_entry_determine_type (&file_entries_list[cen]->fe_type,
+                                 &file_entry_type);
+      wmove (win, cen, 2);
+      waddstr (win, file_entries_list[cen]->fe_name);
       wmove (win, cen, 0);
       refresh ();
     }
@@ -213,17 +272,52 @@ main (int argc, char **argv)
       goto error;
     }
 
+  struct file_entry **file_entries_list = NULL;
+  int file_entries_list_length = MAX_SIZE * sizeof (struct file_entry);
+
+  file_entries_list = malloc (file_entries_list_length + 1);
+
+  if (file_entries_list == NULL)
+    {
+      goto error;
+    }
+
+  memset (file_entries_list, 0, sizeof (struct file_entry));
+
+  int i = 0;
+  int dir_name_length = 0;
+
+  for (i = 0; i < num_entries; ++i)
+    {
+      dir_name_length = strlen (dir_list[i]->d_name);
+
+      file_entries_list[i]->fe_name = NULL;
+      file_entries_list[i]->fe_name
+          = malloc (MAX_STR_SIZE * dir_name_length + 1);
+
+      if (file_entries_list[i]->fe_name == NULL)
+        {
+          goto error;
+        }
+
+      memset (file_entries_list[i]->fe_name, 0, sizeof (char));
+      strcpy (file_entries_list[i]->fe_name, dir_list[i]->d_name);
+
+      file_entries_list[i]->fe_name_length = dir_name_length;
+      file_entries_list[i]->fe_type = dir_list[i]->d_type;
+    }
+
   int stdscr_max_y = 0;
 
   int input_key;
 
-  int tui_stdscr_welcome_message_size = MAX_STR_SIZE * sizeof (char);
+  int tui_stdscr_welcome_message_length = MAX_STR_SIZE * sizeof (char);
 
   char *tui_stdscr_welcome_message = NULL;
 
-  tui_stdscr_welcome_message = malloc (tui_stdscr_welcome_message_size + 1);
+  tui_stdscr_welcome_message = malloc (tui_stdscr_welcome_message_length + 1);
 
-  memset (tui_stdscr_welcome_message, 0, tui_stdscr_welcome_message_size);
+  memset (tui_stdscr_welcome_message, 0, sizeof (char));
 
   strcpy (tui_stdscr_welcome_message,
           _ ("Hello to 'dr' your tui file manager."));
@@ -250,7 +344,7 @@ main (int argc, char **argv)
   waddstr (stdscr, tui_stdscr_welcome_message);
   refresh ();
 
-  tui_print_list (stdscr, &stdscr_cur_pos, dir_list, num_entries);
+  tui_print_list (stdscr, &stdscr_cur_pos, file_entries_list, num_entries);
   refresh ();
 
   stdscr_cur_pos = 0;
